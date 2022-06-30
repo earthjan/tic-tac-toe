@@ -62,11 +62,14 @@ class Game extends React.Component {
         })
     }
 
+    // Marks the selected square and then records it as a new history.
     handleClick(i) {
         const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[history.length - 1];
         const squares = current.squares.slice();
 
+        // do nothing if there's a winner OR the selected square
+        // was already marked.
         if (calculateWinner(squares) || squares[i]) {
             return;
         }
@@ -84,6 +87,7 @@ class Game extends React.Component {
 
     render() {
         const history = this.state.history
+        const coords = getCoords(history);
         const current = history[this.state.stepNumber]
         const winner = calculateWinner(current.squares)
 
@@ -95,16 +99,23 @@ class Game extends React.Component {
             status = 'Next player: ' + (this.state.xIsNext) ? 'X' : 'O'
 
         const moves = history.map((step, move) => {
-            const desc = move ? 
-                'Go to move #' + move :
-                'Go to game start'
-            
+            let desc;
+
+            if (!move) {
+                desc = 'Go to game start';
+            } else {
+                // -1 because move=0 will be skipped because history[0] has initially an array of nulls,
+                // so we go to move=1 having an array with an input now in which this means that coords has now
+                // value but in the index 0.
+                desc = 'Go to move #' + move + ' step coord: ' + coords[move - 1];
+            }
+
             return (
                 <li key={move}>
-                    <button 
+                    <button
                         onClick={() => this.jumpTo(move)}
                     >
-                    {desc}
+                        {desc}
                     </button>
                 </li>
             )
@@ -150,4 +161,26 @@ function calculateWinner(squares) {
         }
     }
     return null;
+}
+
+function getCoords(history) {
+    const coords = [
+        [1, 1], [2, 1], [3, 1],
+        [1, 2], [2, 2], [3, 2],
+        [1, 3], [2, 3], [3, 3]
+    ];
+    const existingCoords = [];
+    
+    history.forEach((step) => {
+        step.squares.forEach((square, index) => {
+            const coord = coords[index];
+            const coordExist = existingCoords.find(value => value === coord);
+
+            if (square != null && coordExist == undefined) {
+                existingCoords.push(coords[index]);
+            }
+        })
+    });
+
+    return existingCoords;
 }
