@@ -102,12 +102,14 @@ class Game extends React.Component {
             let desc;
 
             if (!move) {
-                desc = 'Go to game start';
+                let text = 'Go to game start';
+                desc = (move == this.state.stepNumber) ? <b>{text}</b> : text;
             } else {
+                let text = 'Go to move #' + move + ' step coord: ' + coords[move - 1];
                 // -1 because move=0 will be skipped because history[0] has initially an array of nulls,
                 // so we go to move=1 having an array with an input now in which this means that coords has now
                 // value but in the index 0.
-                desc = 'Go to move #' + move + ' step coord: ' + coords[move - 1];
+                desc = (move == this.state.stepNumber) ? <b>{text}</b> : text;
             }
 
             return (
@@ -170,7 +172,7 @@ function getCoords(history) {
         [1, 3], [2, 3], [3, 3]
     ];
     const existingCoords = [];
-    
+
     history.forEach((step) => {
         step.squares.forEach((square, index) => {
             const coord = coords[index];
