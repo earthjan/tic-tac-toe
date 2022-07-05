@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { isCompositeComponent } from 'react-dom/test-utils';
 import './index.css';
 
 function Square(props) {
@@ -47,6 +48,14 @@ class Board extends React.Component {
     }
 }
 
+function SortBtn(props) {
+    return (
+        <button onClick={() => props.sort()}>
+            Sort {(props.isAscending) ? 'Ascendingly' : 'Descendingly'}
+        </button>
+    )
+}
+
 class Game extends React.Component {
     constructor(props) {
         super(props)
@@ -55,7 +64,8 @@ class Game extends React.Component {
                 squares: Array(9).fill(null)
             }],
             xIsNext: true,
-            stepNumber: 0
+            stepNumber: 0,
+            isAscending : true
         }
     }
 
@@ -89,9 +99,13 @@ class Game extends React.Component {
         });
     }
 
+    sort() {
+        this.setState({ isAscending : !this.state.isAscending});
+    }
+
     render() {
         const history = this.state.history
-        const coords = getCoords(history);
+        const coords = getCoords(history, 3, 3);
         const current = history[this.state.stepNumber]
         const winner = calculateWinner(current.squares)
 
@@ -107,13 +121,13 @@ class Game extends React.Component {
 
             if (!move) {
                 let text = 'Go to game start';
-                desc = (move == this.state.stepNumber) ? <b>{text}</b> : text;
+                desc = (move === this.state.stepNumber) ? <b>{text}</b> : text;
             } else {
                 let text = 'Go to move #' + move + ' step coord: ' + coords[move - 1];
                 // -1 because move=0 will be skipped because history[0] has initially an array of nulls,
                 // so we go to move=1 having an array with an input now in which this means that coords has now
                 // value but in the index 0.
-                desc = (move == this.state.stepNumber) ? <b>{text}</b> : text;
+                desc = (move === this.state.stepNumber) ? <b>{text}</b> : text;
             }
 
             return (
@@ -137,7 +151,11 @@ class Game extends React.Component {
                 </div>
                 <div className="game-info">
                     <div>{status}</div>
-                    <ol>{moves}</ol>
+                    <SortBtn 
+                        sort={() => this.sort()}
+                        isAscending={this.state.isAscending}
+                    />
+                    <ol>{(this.state.isAscending) ? moves : moves.reverse()}</ol>
                 </div>
             </div>
         );
@@ -169,12 +187,18 @@ function calculateWinner(squares) {
     return null;
 }
 
-function getCoords(history) {
-    const coords = [
-        [1, 1], [2, 1], [3, 1],
-        [1, 2], [2, 2], [3, 2],
-        [1, 3], [2, 3], [3, 3]
-    ];
+function getCoords(history, rows, squaresPerRow) {
+    if (history.length === 0) {
+        return [];
+    }
+
+    const coords = [];
+    for (let i=1; i<=rows; i++) {
+        for (let j=1; j<=squaresPerRow; j++) {
+            coords.push([j, i]);
+        }
+    }
+
     const existingCoords = [];
 
     history.forEach((step) => {
@@ -182,7 +206,7 @@ function getCoords(history) {
             const coord = coords[index];
             const coordExist = existingCoords.find(value => value === coord);
 
-            if (square != null && coordExist == undefined) {
+            if (square != null && coordExist === undefined) {
                 existingCoords.push(coords[index]);
             }
         })
