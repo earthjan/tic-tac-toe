@@ -111,7 +111,7 @@ class Game extends React.Component {
                 squares: squares,
             }]),
             stepNumber: history.length,
-            xIsNext: !this.state.xIsNext,
+            xIsNext: !this.state.xIsNext
         });
     }
 
@@ -122,15 +122,18 @@ class Game extends React.Component {
     render() {
         const history = this.state.history
         const coords = getCoords(history, 3, 3);
-        const current = history[this.state.stepNumber]
-        const winner = calculateWinner(current.squares)
+        const current = history[this.state.stepNumber];
+        const winner = calculateWinner(current.squares);
 
         let status
 
-        if (winner)
-            status = 'Winner: ' + winner
-        else
-            status = 'Next player: ' + (this.state.xIsNext) ? 'X' : 'O'
+        if (winner) {
+            status = 'Winner: ' + winner;
+        } else if (current.squares.includes(null) === false && !winner) {
+            status = 'Draw';
+        } else {
+            status = 'Next player: ' + ((this.state.xIsNext) ? 'X' : 'O');
+        }
 
         const moves = history.map((step, move) => {
             let desc;
